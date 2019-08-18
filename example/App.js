@@ -25,7 +25,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import Helper from './Helper';
+import Helper from 'react-native-helper';
 
 import SplashScreen from 'react-native-splash-screen';
 

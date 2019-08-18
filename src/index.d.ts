@@ -1,5 +1,5 @@
-declare module 'react-native-helper' {
-  import {StyleProp, TextStyle, ViewStyle} from 'react-native';
+declare module "react-native-updater" {
+  import { StyleProp, TextStyle, ViewStyle } from "react-native";
   export interface Props {
     appID?: string;
     checkOnResume?: boolean;
@@ -16,7 +16,7 @@ declare module 'react-native-helper' {
       activeButtonTextStyle: StyleProp<TextStyle>;
       inactiveButtonStyle: StyleProp<ViewStyle>;
       inactiveButtonTextStyle: StyleProp<TextStyle>;
-      animationType: 'scale' | 'slideInUp';
+      animationType: "scale" | "slideInUp";
     };
   }
 
@@ -38,5 +38,5 @@ declare module 'react-native-helper' {
     latestVersion: string;
   }
 
-  export default class ReactNativeHelepr extends React.Component<Props, {}> {}
+  export default class ReactNativeUpdater extends React.Component<Props, {}> {}
 }
