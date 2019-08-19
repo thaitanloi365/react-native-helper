@@ -34,6 +34,7 @@ class ReactNativeUpdater extends React.Component {
     checkOnResume: true,
     timeoutProcess: 60000,
     codePushDownloadTimeout: 30000,
+    forceStoreUpdate: false,
     alertProps: {
       title: "New app version is available.",
       message: "Please upgrade your app to latest version.",
@@ -359,7 +360,7 @@ class ReactNativeUpdater extends React.Component {
       modalBackgroundColor = "rgba(0,0,0,0.7)"
     } = alertProps;
     const { showContent, isVisible } = this.state;
-
+    const { forceStoreUpdate } = this.props;
     const backgroundColor = showContent ? modalBackgroundColor : "transparent";
 
     const { slideAnimationStyle, opacityStyle } = this._getAnimation();
@@ -373,15 +374,21 @@ class ReactNativeUpdater extends React.Component {
                 <Text style={[styles.message, messageStyle]}>{message}</Text>
               )}
               <View style={styles.rowButton}>
+                {forceStoreUpdate === false && (
+                  <TouchableOpacity
+                    style={[styles.outlineButton, inactiveButtonStyle]}
+                    activeOpacity={0.7}
+                    onPress={() => this.setState({ installLater: true }, this._hideAlert)}
+                  >
+                    <Text style={[styles.outlineButtonText, inactiveButtonTextStyle]}>Later</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
-                  style={[styles.outlineButton, inactiveButtonStyle]}
-                  activeOpacity={0.7}
-                  onPress={() => this.setState({ installLater: true }, this._hideAlert)}
-                >
-                  <Text style={[styles.outlineButtonText, inactiveButtonTextStyle]}>Later</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.solidButton, activeButtonStyle]}
+                  style={[
+                    styles.solidButton,
+                    { flex: forceStoreUpdate ? 0.5 : 1, marginLeft: forceStoreUpdate ? 0 : 8 },
+                    activeButtonStyle
+                  ]}
                   activeOpacity={0.7}
                   onPress={() => Linking.openURL(this._storeUrl)}
                 >
@@ -463,7 +470,7 @@ const styles = StyleSheet.create({
   },
   rowButton: {
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "center"
   }
 });
 
