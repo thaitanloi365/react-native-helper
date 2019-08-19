@@ -439,11 +439,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 16,
-    marginHorizontal: 10
+    marginHorizontal: 16
   },
   modal: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
     justifyContent: "center"
   },
   title: {
