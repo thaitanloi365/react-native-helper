@@ -5,6 +5,8 @@ declare module "react-native-updater" {
     checkOnResume?: boolean;
     onDidCheck?: (result: Result) => void;
     timeoutProcess?: number;
+    codePushDownloadTimeout?: number;
+    deploymentKey?: string;
     alertProps?: {
       title: string;
       titleStyle: StyleProp<TextStyle>;

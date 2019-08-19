@@ -21,8 +21,12 @@ import VersionCheck from "react-native-version-check";
 class ReactNativeUpdater extends React.Component {
   _TAG = "**** React Native Helper ->";
   _timeoutHanlder = null;
+  _timeoutProcessHanlder = null;
   _storeUrl = null;
   _calledCheckDone = false;
+  _downloaded = false;
+  _appOnResumeCount = 0;
+
   _packgeInfo = {
     storeUrl: null,
     storeVersion: null,
@@ -40,11 +44,13 @@ class ReactNativeUpdater extends React.Component {
 
   static defaultProps = {
     checkOnResume: true,
-    timeoutProcess: 30000,
+    timeoutProcess: 60000,
+    codePushDownloadTimeout: 30000,
     alertProps: {
-      title: "Newer app version is avaible.",
+      title: "New app version is available.",
       message: "Please upgrade your app to latest version.",
-      modalBackgroundColor: "rgba(0,0,0,0.7)"
+      modalBackgroundColor: "rgba(0,0,0,0.7)",
+      animationType: "slide"
     }
   };
 
@@ -52,18 +58,22 @@ class ReactNativeUpdater extends React.Component {
     this._handleAppStateChange("active");
     if (this.props.checkOnResume) {
       AppState.addEventListener("change", this._handleAppStateChange);
+      this._appOnResumeCount += 1;
     }
   }
 
   componentWillUnmount() {
     AppState.removeEventListener("change", this._handleAppStateChange);
     this._timeoutHanlder && clearTimeout(this._timeoutHanlder);
+    this._timeoutProcessHanlder && clearTimeout(this._timeoutProcessHanlder);
   }
 
   _triggerDidCheck = () => {
-    if (this._calledCheckDone == false) {
+    if (this._calledCheckDone == false && this._downloaded) {
       console.log(this._TAG, "onDidCheck:", this._packgeInfo);
       this._calledCheckDone = true;
+      this._downloaded = false;
+
       const { onDidCheck } = this.props;
       onDidCheck && onDidCheck(this._packgeInfo);
       if (this._packgeInfo && typeof this._packgeInfo.storeUrl === "string" && this._packgeInfo.storeUrl !== "") {
@@ -78,18 +88,17 @@ class ReactNativeUpdater extends React.Component {
     if (nextAppState === "active" && installLater === false) {
       this._checkStore()
         .then(response => {
-          result = response;
           this._packgeInfo.storeUrl = response.storeUrl;
           this._packgeInfo.storeVersion = response.currentVersion || response.latestVersion;
 
           console.log(this._TAG, "check store done:", response);
-          if (result.hasNewerVersion) {
+          if (response.hasNewerVersion) {
             throw Error("Need update store, check done.");
           }
           return true;
         })
         .then(shouldCheckCodePush => {
-          if (shouldCheckCodePush) {
+          if (shouldCheckCodePush && this._appOnResumeCount === 1) {
             return this._checkCodePush();
           }
           return null;
@@ -230,7 +239,8 @@ class ReactNativeUpdater extends React.Component {
         syncMessage = "Checking update.";
         break;
       case CodePush.SyncStatus.DOWNLOADING_PACKAGE:
-        this._timeoutHanlder = setTimeout(this._triggerDidCheck, this.props.timeoutProcess);
+        this._downloaded = false;
+        this._timeoutHanlder = setTimeout(this._triggerDidCheck, this.props.codePushDownloadTimeout);
         syncMessage = "Downloading update.";
         break;
       case CodePush.SyncStatus.AWAITING_USER_ACTION:
@@ -238,6 +248,7 @@ class ReactNativeUpdater extends React.Component {
         break;
       case CodePush.SyncStatus.INSTALLING_UPDATE:
         syncMessage = "Installing update.";
+        this._downloaded = true;
         break;
       case CodePush.SyncStatus.UP_TO_DATE:
         this._triggerDidCheck();
@@ -266,8 +277,8 @@ class ReactNativeUpdater extends React.Component {
 
   _getAnimation = () => {
     const { animatedTranslateValue, animatedOpacityValue } = this.state;
-    const { animationType } = this.props;
-    if (animationType === "scale") {
+    const { alertProps } = this.props;
+    if (alertProps.animationType === "scale") {
       const scale = animatedTranslateValue.interpolate({
         inputRange: [0, 1],
         outputRange: [0, 1]
