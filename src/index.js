@@ -24,7 +24,7 @@ class ReactNativeUpdater extends React.Component {
   _timeoutProcessHanlder = null;
   _storeUrl = null;
   _calledCheckDone = false;
-  _downloaded = false;
+
   _appOnResumeCount = 0;
 
   _packgeInfo = {
@@ -60,6 +60,8 @@ class ReactNativeUpdater extends React.Component {
     if (this.props.checkOnResume) {
       AppState.addEventListener("change", this._handleAppStateChange);
     }
+
+    this._timeoutProcessHanlder = setTimeout(this._triggerDidCheck, this.props.timeoutProcess);
   }
 
   componentWillUnmount() {
@@ -70,11 +72,8 @@ class ReactNativeUpdater extends React.Component {
 
   _triggerDidCheck = () => {
     if (this._calledCheckDone == false) {
-      if (!this._downloaded) return;
-
       console.log(this._TAG, "onDidCheck:", this._packgeInfo);
       this._calledCheckDone = true;
-      this._downloaded = false;
 
       const { onDidCheck } = this.props;
       onDidCheck && onDidCheck(this._packgeInfo);
@@ -255,7 +254,6 @@ class ReactNativeUpdater extends React.Component {
         syncMessage = "Checking update.";
         break;
       case CodePush.SyncStatus.DOWNLOADING_PACKAGE:
-        this._downloaded = false;
         this._timeoutHanlder = setTimeout(this._triggerDidCheck, this.props.codePushDownloadTimeout);
         syncMessage = "Downloading update.";
         break;
@@ -264,7 +262,7 @@ class ReactNativeUpdater extends React.Component {
         break;
       case CodePush.SyncStatus.INSTALLING_UPDATE:
         syncMessage = "Installing update.";
-        this._downloaded = true;
+
         break;
       case CodePush.SyncStatus.UP_TO_DATE:
         this._triggerDidCheck();
