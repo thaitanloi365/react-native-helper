@@ -7,7 +7,7 @@ declare module "react-native-updater" {
     timeoutProcess?: number;
     codePushDownloadTimeout?: number;
     deploymentKey?: string;
-    alertProps?: {
+    alertProps?: Partial<{
       title: string;
       titleStyle: StyleProp<TextStyle>;
       message: string;
@@ -19,7 +19,7 @@ declare module "react-native-updater" {
       inactiveButtonStyle: StyleProp<ViewStyle>;
       inactiveButtonTextStyle: StyleProp<TextStyle>;
       animationType: "scale" | "slideInUp";
-    };
+    }>;
   }
 
   export interface Result {

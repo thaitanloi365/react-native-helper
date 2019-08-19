@@ -378,16 +378,16 @@ class ReactNativeUpdater extends React.Component {
   _renderModal = () => {
     const { alertProps } = this.props;
     const {
-      title,
       titleStyle,
-      message,
       messageStyle,
       activeButtonStyle,
       activeButtonTextStyle,
       inactiveButtonStyle,
       inactiveButtonTextStyle,
       containerStyle,
-      modalBackgroundColor
+      title = "Update available!",
+      message = "Please upgrade your app to latest version.",
+      modalBackgroundColor = "rgba(0,0,0,0.7)"
     } = alertProps;
     const { showContent, isVisible } = this.state;
 
