@@ -56,9 +56,9 @@ class ReactNativeUpdater extends React.Component {
 
   componentDidMount() {
     this._handleAppStateChange("active");
+
     if (this.props.checkOnResume) {
       AppState.addEventListener("change", this._handleAppStateChange);
-      this._appOnResumeCount += 1;
     }
   }
 
@@ -80,6 +80,15 @@ class ReactNativeUpdater extends React.Component {
         this._storeUrl = this._packgeInfo.storeUrl;
         this.setState({ isVisible: true }, this._showAlert);
       }
+    } else {
+      if (this._appOnResumeCount && this.state.installLater === false) {
+        const { onDidCheck } = this.props;
+        onDidCheck && onDidCheck(this._packgeInfo);
+        if (this._packgeInfo && typeof this._packgeInfo.storeUrl === "string" && this._packgeInfo.storeUrl !== "") {
+          this._storeUrl = this._packgeInfo.storeUrl;
+          this.setState({ isVisible: true }, this._showAlert);
+        }
+      }
     }
   };
 
@@ -98,14 +107,15 @@ class ReactNativeUpdater extends React.Component {
           return true;
         })
         .then(shouldCheckCodePush => {
-          if (shouldCheckCodePush && this._appOnResumeCount === 1) {
+          if (shouldCheckCodePush && this._appOnResumeCount === 0) {
+            this._appOnResumeCount += 1;
             return this._checkCodePush();
           }
           return null;
         })
         .then(response => {
           if (!response) {
-            throw Error("Need update code push, check done.");
+            throw Error("No need update code push, check done.");
           }
           if (!response.hasNewerVersion) {
             throw Error("No have newer code push version.");
@@ -278,7 +288,7 @@ class ReactNativeUpdater extends React.Component {
   _getAnimation = () => {
     const { animatedTranslateValue, animatedOpacityValue } = this.state;
     const { alertProps } = this.props;
-    if (alertProps.animationType === "scale") {
+    if (alertProps && alertProps.animationType === "scale") {
       const scale = animatedTranslateValue.interpolate({
         inputRange: [0, 1],
         outputRange: [0, 1]
