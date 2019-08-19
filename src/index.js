@@ -438,7 +438,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 16
+    paddingBottom: 16,
+    marginHorizontal: 10
   },
   modal: {
     ...StyleSheet.absoluteFillObject,
