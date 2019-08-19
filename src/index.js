@@ -1,16 +1,5 @@
 import React from "react";
-import {
-  Linking,
-  TouchableOpacity,
-  StyleSheet,
-  View,
-  Text,
-  AppState,
-  Modal,
-  Animated,
-  Dimensions,
-  Easing
-} from "react-native";
+import { Linking, TouchableOpacity, StyleSheet, View, Text, Modal, Animated, Dimensions } from "react-native";
 import CodePush from "react-native-code-push";
 import VersionCheck from "react-native-version-check";
 
@@ -24,8 +13,7 @@ class ReactNativeUpdater extends React.Component {
   _timeoutProcessHanlder = null;
   _storeUrl = null;
   _calledCheckDone = false;
-
-  _appOnResumeCount = 0;
+  _codePushDidCheck = false;
 
   _packgeInfo = {
     storeUrl: null,
@@ -55,80 +43,60 @@ class ReactNativeUpdater extends React.Component {
   };
 
   componentDidMount() {
-    this._handleAppStateChange("active");
+    const { timeoutProcess = 60000 } = this.props;
 
-    if (this.props.checkOnResume) {
-      AppState.addEventListener("change", this._handleAppStateChange);
-    }
+    this._timeoutProcessHanlder = setTimeout(this._triggerDidCheck, timeoutProcess);
 
-    this._timeoutProcessHanlder = setTimeout(this._triggerDidCheck, this.props.timeoutProcess);
+    this._checkStore()
+      .then(response => {
+        this._packgeInfo.storeUrl = response.storeUrl;
+        this._packgeInfo.storeVersion = response.currentVersion || response.latestVersion;
+
+        console.log(this._TAG, "check store done:", response);
+        if (response.hasNewerVersion) {
+          throw Error("Need update store, check done.");
+        }
+        return true;
+      })
+      .then(shouldCheckCodePush => {
+        if (shouldCheckCodePush && this._codePushDidCheck === false) {
+          this._codePushDidCheck = true;
+          return this._checkCodePush();
+        }
+        return null;
+      })
+      .then(response => {
+        if (!response) {
+          throw Error("No need update code push, check done.");
+        }
+        if (!response.hasNewerVersion) {
+          throw Error("No have newer code push version.");
+        }
+        console.log(this._TAG, "Start code push updating....", response);
+        this._packgeInfo.codePushVersion = response.currentVersion || response.latestVersion;
+        return;
+      })
+      .catch(error => {
+        console.log(this._TAG, "check error:", error);
+        this._triggerDidCheck();
+      });
   }
 
   componentWillUnmount() {
-    AppState.removeEventListener("change", this._handleAppStateChange);
     this._timeoutHanlder && clearTimeout(this._timeoutHanlder);
     this._timeoutProcessHanlder && clearTimeout(this._timeoutProcessHanlder);
   }
 
   _triggerDidCheck = () => {
+    console.log(this._TAG, "onDidCheck:", this._packgeInfo);
+    if (this._packgeInfo && typeof this._packgeInfo.storeUrl === "string" && this._packgeInfo.storeUrl !== "") {
+      this._storeUrl = this._packgeInfo.storeUrl;
+      this.setState({ isVisible: true }, this._showAlert);
+    }
     if (this._calledCheckDone == false) {
-      console.log(this._TAG, "onDidCheck:", this._packgeInfo);
       this._calledCheckDone = true;
-
       const { onDidCheck } = this.props;
       onDidCheck && onDidCheck(this._packgeInfo);
-      if (this._packgeInfo && typeof this._packgeInfo.storeUrl === "string" && this._packgeInfo.storeUrl !== "") {
-        this._storeUrl = this._packgeInfo.storeUrl;
-        this.setState({ isVisible: true }, this._showAlert);
-      }
-    } else {
-      if (this._appOnResumeCount && this.state.installLater === false) {
-        const { onDidCheck } = this.props;
-        onDidCheck && onDidCheck(this._packgeInfo);
-        if (this._packgeInfo && typeof this._packgeInfo.storeUrl === "string" && this._packgeInfo.storeUrl !== "") {
-          this._storeUrl = this._packgeInfo.storeUrl;
-          this.setState({ isVisible: true }, this._showAlert);
-        }
-      }
-    }
-  };
-
-  _handleAppStateChange = nextAppState => {
-    const { installLater } = this.state;
-    if (nextAppState === "active" && installLater === false) {
-      this._checkStore()
-        .then(response => {
-          this._packgeInfo.storeUrl = response.storeUrl;
-          this._packgeInfo.storeVersion = response.currentVersion || response.latestVersion;
-
-          console.log(this._TAG, "check store done:", response);
-          if (response.hasNewerVersion) {
-            throw Error("Need update store, check done.");
-          }
-          return true;
-        })
-        .then(shouldCheckCodePush => {
-          if (shouldCheckCodePush && this._appOnResumeCount === 0) {
-            this._appOnResumeCount += 1;
-            return this._checkCodePush();
-          }
-          return null;
-        })
-        .then(response => {
-          if (!response) {
-            throw Error("No need update code push, check done.");
-          }
-          if (!response.hasNewerVersion) {
-            throw Error("No have newer code push version.");
-          }
-          console.log(this._TAG, "Start code push updating....", response);
-          this._packgeInfo.codePushVersion = response.currentVersion || response.latestVersion;
-          return;
-        })
-        .catch(error => {
-          console.log(this._TAG, "check error:", error);
-          this._triggerDidCheck();
-        });
     }
   };
 
@@ -254,7 +222,8 @@ class ReactNativeUpdater extends React.Component {
         syncMessage = "Checking update.";
         break;
       case CodePush.SyncStatus.DOWNLOADING_PACKAGE:
-        this._timeoutHanlder = setTimeout(this._triggerDidCheck, this.props.codePushDownloadTimeout);
+        const { codePushDownloadTimeout = 30000 } = this.props;
+        this._timeoutHanlder = setTimeout(this._triggerDidCheck, codePushDownloadTimeout);
         syncMessage = "Downloading update.";
         break;
       case CodePush.SyncStatus.AWAITING_USER_ACTION:
