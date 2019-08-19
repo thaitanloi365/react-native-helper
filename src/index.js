@@ -153,6 +153,8 @@ class ReactNativeUpdater extends React.Component {
           if (!remotePackage) {
             CodePush.getUpdateMetadata(CodePush.UpdateState.LATEST)
               .then(response => {
+                if (!response) throw Error("Fail to fetch code push metadata.");
+
                 const buildNumber = response.label.substring(1);
                 const version = `${response.appVersion}.${buildNumber}`;
                 this._packgeInfo.codePushVersion = version;
@@ -229,6 +231,8 @@ class ReactNativeUpdater extends React.Component {
           return VersionCheck.getStoreUrl({ appID });
         })
         .then(storeUrl => {
+          console.log(this._TAG, "storeUrl:", storeUrl);
+          if (!storeUrl) throw Error("store url invalid: ");
           result.storeUrl = storeUrl;
           this._storeUrl = storeUrl;
           return Linking.canOpenURL(storeUrl);
