@@ -69,7 +69,9 @@ class ReactNativeUpdater extends React.Component {
   }
 
   _triggerDidCheck = () => {
-    if (this._calledCheckDone == false && this._downloaded) {
+    if (this._calledCheckDone == false) {
+      if (!this._downloaded) return;
+
       console.log(this._TAG, "onDidCheck:", this._packgeInfo);
       this._calledCheckDone = true;
       this._downloaded = false;
