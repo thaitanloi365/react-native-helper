@@ -2,7 +2,6 @@ declare module "react-native-updater" {
   import { StyleProp, TextStyle, ViewStyle } from "react-native";
   export interface Props {
     appID?: string;
-    checkOnResume?: boolean;
     onDidCheck?: (result: Result) => void;
     timeoutProcess?: number;
     codePushDownloadTimeout?: number;
