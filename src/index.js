@@ -258,9 +258,13 @@ class ReactNativeUpdater extends React.Component {
         syncMessage = "Downloading update.";
         break;
       case CodePush.SyncStatus.AWAITING_USER_ACTION:
-        syncMessage = "Awating user action.";
+        syncMessage = "Awaiting user action.";
         break;
       case CodePush.SyncStatus.INSTALLING_UPDATE:
+        if (this._timeoutHanlder) {
+          clearTimeout(this._timeoutHanlder);
+          this._timeoutHanlder = 0;
+        }
         syncMessage = "Installing update.";
 
         break;
