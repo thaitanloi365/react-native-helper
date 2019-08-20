@@ -357,7 +357,9 @@ class ReactNativeUpdater extends React.Component {
       containerStyle,
       title = "Update available!",
       message = "Please upgrade your app to latest version.",
-      modalBackgroundColor = "rgba(0,0,0,0.7)"
+      modalBackgroundColor = "rgba(0,0,0,0.7)",
+      activeButtonText = "Update now",
+      inactiveButtonText = "Later"
     } = alertProps;
     const { showContent, isVisible } = this.state;
     const { forceStoreUpdate } = this.props;
@@ -380,7 +382,7 @@ class ReactNativeUpdater extends React.Component {
                     activeOpacity={0.7}
                     onPress={() => this.setState({ installLater: true }, this._hideAlert)}
                   >
-                    <Text style={[styles.outlineButtonText, inactiveButtonTextStyle]}>Later</Text>
+                    <Text style={[styles.outlineButtonText, inactiveButtonTextStyle]}>{inactiveButtonText}</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
@@ -392,7 +394,7 @@ class ReactNativeUpdater extends React.Component {
                   activeOpacity={0.7}
                   onPress={() => Linking.openURL(this._storeUrl)}
                 >
-                  <Text style={[styles.solidButtonText, activeButtonTextStyle]}>Update now</Text>
+                  <Text style={[styles.solidButtonText, activeButtonTextStyle]}>{activeButtonText}</Text>
                 </TouchableOpacity>
               </View>
             </Animated.View>
