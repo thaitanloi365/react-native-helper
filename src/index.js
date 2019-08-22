@@ -32,8 +32,8 @@ class ReactNativeUpdater extends React.Component {
 
   static defaultProps = {
     checkOnResume: true,
-    timeoutProcess: 60000,
-    codePushDownloadTimeout: 30000,
+    timeoutProcess: 70000,
+    codePushDownloadTimeout: 45000,
     forceStoreUpdate: false,
     alertProps: {
       title: "New app version is available.",
