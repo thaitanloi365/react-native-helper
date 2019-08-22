@@ -14,8 +14,10 @@ declare module "react-native-updater" {
       modalBackgroundColor: string;
       messageStyle: StyleProp<TextStyle>;
       containerStyle?: StyleProp<ViewStyle>;
+      activeButtonText?: string;
       activeButtonStyle: StyleProp<ViewStyle>;
       activeButtonTextStyle: StyleProp<TextStyle>;
+      inactiveButtonText?: string;
       inactiveButtonStyle: StyleProp<ViewStyle>;
       inactiveButtonTextStyle: StyleProp<TextStyle>;
       animationType: "scale" | "slideInUp";
