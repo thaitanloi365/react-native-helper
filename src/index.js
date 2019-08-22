@@ -8,7 +8,7 @@ import VersionCheck from "react-native-version-check";
  */
 
 class ReactNativeUpdater extends React.Component {
-  _TAG = "**** React Native Helper ->";
+  _TAG = "**** React Native Updater v0.0.6 ->";
   _timeoutHanlder = null;
   _timeoutProcessHanlder = null;
   _storeUrl = null;
@@ -151,6 +151,7 @@ class ReactNativeUpdater extends React.Component {
           resolve(result);
         })
         .catch(error => {
+          reject(error);
           console.log(this._TAG, "check code push error:", error);
         });
     });
