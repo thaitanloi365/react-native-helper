@@ -1,6 +1,6 @@
 {
   "name": "react-native-updater",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "React native updater",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -9,7 +9,7 @@
   "author": "Loi",
   "license": "MIT",
   "dependencies": {
-    "react-native-code-push": "^5.6.1",
+    "react-native-code-push": "^5.7.0",
     "react-native-version-check": "^3.3.0"
   }
 }
