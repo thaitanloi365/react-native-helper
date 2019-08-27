@@ -35,6 +35,8 @@ class ReactNativeUpdater extends React.Component {
     timeoutProcess: 70000,
     codePushDownloadTimeout: 45000,
     forceStoreUpdate: false,
+    skipCheckStore: false,
+    skipCheckCodePush: false,
     alertProps: {
       title: "New app version is available.",
       message: "Please upgrade your app to latest version.",
@@ -44,8 +46,9 @@ class ReactNativeUpdater extends React.Component {
   };
 
   componentDidMount() {
-    const { timeoutProcess = 60000 } = this.props;
-
+    const { timeoutProcess = 60000, skipCheckStore } = this.props;
+    const didCheck = global.__didCheck;
+    console.log(this._TAG, "***** didCheck:", didCheck);
     this._timeoutProcessHanlder = setTimeout(this._triggerDidCheck, timeoutProcess);
 
     this._checkStore()
@@ -60,7 +63,7 @@ class ReactNativeUpdater extends React.Component {
         return true;
       })
       .then(shouldCheckCodePush => {
-        if (shouldCheckCodePush && this._codePushDidCheck === false) {
+        if (shouldCheckCodePush && this._codePushDidCheck === false && !skipCheckStore) {
           this._codePushDidCheck = true;
           return this._checkCodePush();
         }
@@ -98,6 +101,7 @@ class ReactNativeUpdater extends React.Component {
       this._calledCheckDone = true;
       const { onDidCheck } = this.props;
       onDidCheck && onDidCheck(this._packgeInfo);
+      global.__didCheck = true;
     }
   };
 
@@ -163,7 +167,7 @@ class ReactNativeUpdater extends React.Component {
 
   _checkStore = () => {
     return new Promise((resolve, reject) => {
-      const { appID } = this.props;
+      const { appID, skipCheckStore } = this.props;
       console.log(this._TAG, "Check store with appID:", appID);
 
       let result = {
@@ -172,7 +176,8 @@ class ReactNativeUpdater extends React.Component {
         latestVersion: null,
         storeUrl: null
       };
-      if (typeof appID !== "string" || appID === "") {
+
+      if (typeof appID !== "string" || appID === "" || skipCheckStore) {
         Promise.all([VersionCheck.getCurrentVersion(), VersionCheck.getCurrentBuildNumber()]).then(values => {
           result.currentVersion = `${values[0]}.${values[1]}`;
         });
@@ -224,7 +229,7 @@ class ReactNativeUpdater extends React.Component {
         syncMessage = "Checking update.";
         break;
       case CodePush.SyncStatus.DOWNLOADING_PACKAGE:
-        const { codePushDownloadTimeout = 30000 } = this.props;
+        const { codePushDownloadTimeout } = this.props;
         this._timeoutHanlder = setTimeout(this._triggerDidCheck, codePushDownloadTimeout);
         syncMessage = "Downloading update.";
         break;
