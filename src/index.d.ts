@@ -9,6 +9,7 @@ declare module "react-native-updater" {
     deploymentKey?: string;
     skipCheckStore?: boolean;
     skipCheckCodePush?: boolean;
+    checkOnce?: boolean;
     alertProps?: Partial<{
       title: string;
       titleStyle: StyleProp<TextStyle>;

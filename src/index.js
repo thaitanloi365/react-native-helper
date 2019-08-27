@@ -37,6 +37,7 @@ class ReactNativeUpdater extends React.Component {
     forceStoreUpdate: false,
     skipCheckStore: false,
     skipCheckCodePush: false,
+    checkOnce: true,
     alertProps: {
       title: "New app version is available.",
       message: "Please upgrade your app to latest version.",
@@ -46,11 +47,25 @@ class ReactNativeUpdater extends React.Component {
   };
 
   componentDidMount() {
-    const { timeoutProcess = 60000, skipCheckStore } = this.props;
     const didCheck = global.__didCheck;
-    console.log(this._TAG, "***** didCheck:", didCheck);
-    this._timeoutProcessHanlder = setTimeout(this._triggerDidCheck, timeoutProcess);
+    const checkOnce = this.props.checkOnce && didCheck;
+    console.log(this._TAG, "didCheck - checkOnce:", didCheck, checkOnce);
 
+    if (checkOnce) {
+      this._triggerDidCheck();
+    } else {
+      this._check();
+    }
+  }
+
+  componentWillUnmount() {
+    this._timeoutHanlder && clearTimeout(this._timeoutHanlder);
+    this._timeoutProcessHanlder && clearTimeout(this._timeoutProcessHanlder);
+  }
+
+  _check = () => {
+    const { timeoutProcess = 60000, skipCheckStore, checkOnce = true } = this.props;
+    this._timeoutProcessHanlder = setTimeout(this._triggerDidCheck, timeoutProcess);
     this._checkStore()
       .then(response => {
         this._packgeInfo.storeUrl = response.storeUrl;
@@ -84,12 +99,7 @@ class ReactNativeUpdater extends React.Component {
         console.log(this._TAG, "check error:", error);
         this._triggerDidCheck();
       });
-  }
-
-  componentWillUnmount() {
-    this._timeoutHanlder && clearTimeout(this._timeoutHanlder);
-    this._timeoutProcessHanlder && clearTimeout(this._timeoutProcessHanlder);
-  }
+  };
 
   _triggerDidCheck = () => {
     console.log(this._TAG, "onDidCheck:", this._packgeInfo);
